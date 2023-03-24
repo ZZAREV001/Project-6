@@ -1,10 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head th:insert="fragments/head"></head>
 <body>
+<nav th:insert="fragments/navbar"></nav>
+<main>
+    <div class="container-page">
+        <div class="container">
+            <div class="entete">
+                <h5>Relation</h5>
+            </div>
+            <div th:if="${param.success}">
+                <div class="alert alert-info">You've successfully added
+                    buddy!</div>
+            </div>
+            <div class="container-dropdown">
+                <form action="#" th:action="@{/user/addBuddy}" method="post"
+                      th:object="${buddy}">
+                    <div class="form-group">
+                        <div class="input-group">
+                            <input type="text" class="form-control" th:name="buddy"
+                                   placeholder="Enter email you want to add">
+                        </div>
+                    </div>
+                    <input class="add-connection" type="submit" value="Add Connection" />
+                </form>
+                <span th:each="error : ${errors}" th:text="${error}"></span>
+            </div>
 
+            <h3 class="title-relation">My Relation</h3>
+
+            <div class="container-table">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th scope="col">Fistname</th>
+                        <th scope="col">Lastname</th>
+                        <th scope="col">Email</th>
+                        <th scope="col"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="relation : ${relations}">
+                        <td th:text="${relation.buddy.firstname}"></td>
+                        <td th:text="${relation.buddy.lastname}"></td>
+                        <td th:text="${relation.buddy.email}"></td>
+                        <td>
+                            <form action="#" th:action="@{/user/relation}" th:method="post">
+                                <input type="hidden" th:value="${relation.id}" th:name="id">
+                                <button type="submit" class="btn-danger btn-sm">
+                                    <i class="fa fa-trash" aria-hidden="true"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:insert="fragments/footer"></footer>
 </body>
 </html>

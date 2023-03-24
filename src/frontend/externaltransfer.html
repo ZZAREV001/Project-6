@@ -1,10 +1,129 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:insert="fragments/head"></head>
 <body>
+<nav th:insert="fragments/navbar"></nav>
 
+<main>
+    <div class="container-page">
+        <div class="container">
+            <div class="entete">
+                <h5>Add Bank Account</h5>
+            </div>
+            <div class="container-dropdown">
+                <form action="#" th:action="@{/user/extransfer/addBankAccount}"
+                      th:object="${bankAccount}" method="post">
+                    <div class="input-group">
+                        <input type="text" class="form-control" th:field="*{iban}"
+                               placeholder="Iban">
+                    </div>
+                    <div class="input-group">
+                        <input type="text" class="form-control" th:field="*{bic}"
+                               placeholder="Bic">
+                    </div>
+                    <div class="input-group">
+                        <input type="text" class="form-control" th:field="*{bankName}"
+                               placeholder="Bank Name">
+                    </div>
+                    <div class="input-group">
+                        <input type="text" class="form-control" th:field="*{accountName}"
+                               placeholder="Account Name">
+                    </div>
+                    <input class="add-bank" type="submit" value="Add New BankAccount" />
+                </form>
+                <span th:each="error : ${errors}" th:text="${error}"></span>
+            </div>
+
+            <h3 class="title-relation">My Bank Account</h3>
+
+            <div class="container-table">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th scope="col">IBAN</th>
+                        <th scope="col">BANK NAME</th>
+                        <th scope="col">ACCOUNT NAME</th>
+                        <th scope="col"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="bankAccount : ${listBankAccount}">
+                        <td th:text="${bankAccount.iban}"></td>
+                        <td th:text="${bankAccount.bankName}"></td>
+                        <td th:text="${bankAccount.accountName}"></td>
+                        <td>
+                            <form action="#"
+                                  th:action="@{/user/extransfer/deleteBankAccount}"
+                                  th:method="post"
+                                  th:if="${#lists.isEmpty(bankAccount.externalTransfers)}">
+                                <input type="hidden" th:value="${bankAccount.iban}"
+                                       th:name="iban">
+                                <button type="submit" class="btn-danger btn-sm">
+                                    <i class="fa fa-trash" aria-hidden="true"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+
+            <div class="entete">
+                <h5>Receive Money From My Bank Account</h5>
+            </div>
+
+            <div class="container-dropdown">
+                <form action="#" th:action="@{/user/extransfer/doExternalTransfer}"
+                      th:object="${externalTransfer}" method="post">
+                    <div class="form-group">
+                        <span th:text="${externalTransfer.ibanUser}"></span>
+                    </div>
+                    <div class="form-group">
+                        <select id="account" class="form-control" th:field="*{ibanUser}">
+                            <option th:each="bankAccount : ${listBankAccount}"
+                                    th:value="${bankAccount.iban}" th:text="${bankAccount.iban}"></option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" class="form-control" th:field="*{description}"
+                               placeholder="Description">
+                    </div>
+                    <div class="input-group">
+                        <input type="number" class="form-control" min="0"
+                               th:field="*{amountUser}" placeholder="Montant"> <span
+                            class="input-group-addon">$</span>
+                    </div>
+                    <input class="pay" type="submit" value="Pay" />
+                </form>
+                <span th:each="error : ${errors}" th:text="${error}"></span>
+            </div>
+
+            <h3 class="title-relation">My Transfer</h3>
+
+            <div class="container-table">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th scope="col">IBAN</th>
+                        <th scope="col">Amount</th>
+                        <th scope="col">Fees</th>
+                        <th scope="col">Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="externalTransfer : ${externalTransfers}">
+                        <td th:text="${externalTransfer.ibanUser}"></td>
+                        <td th:text="${externalTransfer.amountUser}"></td>
+                        <td th:text="${externalTransfer.fees}"></td>
+                        <td th:text="${externalTransfer.description}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:insert="fragments/footer"></footer>
 </body>
 </html>

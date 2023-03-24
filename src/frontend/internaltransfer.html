@@ -1,10 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:insert="fragments/head"></head>
 <body>
+<nav th:insert="fragments/navbar"></nav>
 
+<main>
+    <div class="container-page">
+        <div class="container">
+            <div class="entete">
+                <h5>Send Money</h5>
+            </div>
+
+            <div class="container-dropdown">
+                <form action="#" th:action="@{/user/transfer/doInternalTransfer}"
+                      th:object="${internalTransfer}" method="post">
+                    <div class="form-group">
+                        <select id="buddy" class="form-control"
+                                th:field="*{emailReceiver}">
+                            <option th:each="relation : ${relations}"
+                                    th:value="${relation.buddy.email}"
+                                    th:text="${relation.buddy.email}"></option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" class="form-control" th:field="*{description}"
+                               placeholder="Description">
+                    </div>
+                    <div class="input-group">
+                        <input type="number" class="form-control" min="0"
+                               th:field="*{amount}" placeholder="Montant"> <span
+                            class="input-group-addon">$</span>
+                    </div>
+                    <input class="pay" type="submit" value="Pay" />
+                </form>
+                <span th:each="error : ${errors}" th:text="${error}"></span>
+            </div>
+
+
+            <h3 class="title-transaction">My Transaction</h3>
+
+            <div class="container-table">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th scope="col">Connection</th>
+                        <th scope="col">Description</th>
+                        <th scope="col">Amount</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="transfer : ${transfers}">
+                        <td th:text="${transfer.emailReceiver}"></td>
+                        <td th:text="${transfer.description}"></td>
+                        <td th:text="${transfer.amount}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+<footer th:insert="fragments/footer"></footer>
 </body>
 </html>
