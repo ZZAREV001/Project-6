@@ -1,0 +1,53 @@
+/* styles.css */
+.input-group {
+    margin-bottom: 15px;
+}
+
+.add-bank {
+    display: block;
+    margin-top: 15px;
+}
+
+.pay {
+    display: block;
+    margin-top: 15px;
+}
+
+.main-title {
+    color: darkgreen;
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.title-relation {
+    color: darkgreen;
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.main-title {
+    color: darkgreen;
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.add-bank {
+    border: 2px solid #2a3db7; /* Change border width, style, and color as desired */
+    background-color: #2a3db7; /* Change background color as desired */
+    margin-bottom: 15px;
+    color: azure;
+    border-radius: 10px;
+}
+
+.pay {
+    border: 2px solid #2a3db7; /* Change border width, style, and color as desired */
+    background-color: #2a3db7; /* Change background color as desired */
+    margin-bottom: 15px;
+    color: azure;
+    border-radius: 10px;
+}
+
+
