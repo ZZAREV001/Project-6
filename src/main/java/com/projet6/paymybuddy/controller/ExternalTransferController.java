@@ -7,10 +7,11 @@ import com.projet6.paymybuddy.service.TransferService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-@RestController
+@Controller
 @RequestMapping("/user")
 @AllArgsConstructor
 public class ExternalTransferController {
@@ -32,15 +33,15 @@ public class ExternalTransferController {
     }
 
     @PostMapping("/extransfer/doExternalTransfer")
-    public String doExternalTransfert(@ModelAttribute ExternalTransferDto externalTransferDto,
-                                      @AuthenticationPrincipal UserDetails userDetails) {
+    public String doExternalTransfer(@ModelAttribute ExternalTransferDto externalTransferDto,
+                                     @AuthenticationPrincipal UserDetails userDetails) {
         externalTransferDto.setEmailUser(userDetails.getUsername());
         transferService.doExternalTransfer(externalTransferDto);
         return "redirect:/user/extransfer";
     }
 
     @PostMapping("/extransfert/deleteBankAccount")
-    public String deteleBankAccount(@RequestParam String iban) {
+    public String deleteBankAccount(@RequestParam String iban) {
         bankAccountService.deleteBankAccount(iban);
         return "redirect:/user/extransfer";
     }

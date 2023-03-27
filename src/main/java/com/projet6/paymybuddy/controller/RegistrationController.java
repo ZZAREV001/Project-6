@@ -3,9 +3,13 @@ package com.projet6.paymybuddy.controller;
 import com.projet6.paymybuddy.dto.UserRegistrationDto;
 import com.projet6.paymybuddy.service.UserService;
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
-@RestController
+@Controller
 @RequestMapping("/registration")
 @AllArgsConstructor
 public class RegistrationController {
