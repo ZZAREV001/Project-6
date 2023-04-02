@@ -1,5 +1,6 @@
 package com.projet6.paymybuddy.model;
 
+import jakarta.validation.constraints.Email;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -27,6 +28,7 @@ public class User {
     @Column(name = "lastname")
     private String lastName;
 
+    @Email
     @Column(name = "email")
     private String email;
 

@@ -14,13 +14,14 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/user")
 @AllArgsConstructor
 public class RelationController {
+
     private final UserService userService;
 
     @GetMapping("/relation")
     public String addBuddy(Model model, @AuthenticationPrincipal UserDetails userDetails) {
         model.addAttribute("relations",
                 userService.listEmailRelation(userDetails.getUsername()));
-        return "relations";
+        return "relation";
     }
 
     @PostMapping("/addBuddy")
@@ -38,6 +39,5 @@ public class RelationController {
         userService.deleteBuddy(id);
         return "redirect:/user/relation";
     }
-
 
 }

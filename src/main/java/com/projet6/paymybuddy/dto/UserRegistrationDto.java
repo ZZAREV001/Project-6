@@ -17,6 +17,7 @@ public class UserRegistrationDto {
 
     private String password;
 
+    @Email
     private String email;
 
     public UserRegistrationDto(String firstName, String lastname,

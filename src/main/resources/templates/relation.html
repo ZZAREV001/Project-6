@@ -40,16 +40,16 @@
                 <table class="table table-striped">
                     <thead>
                     <tr>
-                        <th scope="col">Fistname</th>
-                        <th scope="col">Lastname</th>
+                        <th scope="col">firstName</th>
+                        <th scope="col">lastName</th>
                         <th scope="col">Email</th>
                         <th scope="col"></th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="relation : ${relations}">
-                        <td th:text="${relation.buddy.firstname}"></td>
-                        <td th:text="${relation.buddy.lastname}"></td>
+                        <td th:text="${relation.buddy.firstName}"></td>
+                        <td th:text="${relation.buddy.lastName}"></td>
                         <td th:text="${relation.buddy.email}"></td>
                         <td>
                             <form action="#" th:action="@{/user/relation}" th:method="post">
