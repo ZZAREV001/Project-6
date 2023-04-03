@@ -27,13 +27,13 @@ public class BankAccountServiceImpl implements BankAccountService {
     }
 
     @Override
-    public BankAccount addBankAccount(String emailOwner, BankAccountDto bankAccountDto) {
-        if (bankAccountDto.getIban().isBlank()) {
+    public BankAccount addBankAccount(String emailOwner, BankAccount bankAccount) {
+        if (bankAccount.getIban().isBlank()) {
             throw new DataMissingException("iban cannot be empty");
         }
 
         User user = userDao.findByEmail(emailOwner);
-        String iban = bankAccountDto.getIban();
+        String iban = bankAccount.getIban();
 
         Optional<BankAccount> bankAccountOptional = Optional.ofNullable(bankAccountDao
                 .findBankAccountByIban(iban));
@@ -41,11 +41,6 @@ public class BankAccountServiceImpl implements BankAccountService {
         return bankAccountOptional
                 .filter(ba -> !ba.getIban().equals(iban))
                 .orElseGet(() -> {
-                    BankAccount bankAccount = new BankAccount();
-                    bankAccount.setIban(bankAccountDto.getIban());
-                    bankAccount.setBic(bankAccountDto.getBic());
-                    bankAccount.setBankName(bankAccountDto.getBankName());
-                    bankAccount.setAccountName(bankAccountDto.getAccountName());
                     bankAccount.setUser(user);
 
                     try {
@@ -60,6 +55,7 @@ public class BankAccountServiceImpl implements BankAccountService {
                     return bankAccount;
                 });
     }
+
 
     @Override
     public Optional<Boolean> deleteBankAccount(String iban) {

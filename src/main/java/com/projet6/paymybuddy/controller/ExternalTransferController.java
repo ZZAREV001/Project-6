@@ -11,6 +11,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.SQLException;
+
 @Controller
 @RequestMapping("/user")
 @AllArgsConstructor
@@ -19,6 +21,7 @@ public class ExternalTransferController {
     private final TransferService transferService;
 
     private final BankAccountService bankAccountService;
+
 
     @GetMapping("/extransfer")
     public String externalTransferPage(Model model,
@@ -39,6 +42,14 @@ public class ExternalTransferController {
         transferService.doExternalTransfer(externalTransferDto);
         return "redirect:/user/extransfer";
     }
+
+    @PostMapping("/extransfer/addBankAccount")
+    public String addBankAccount(@ModelAttribute BankAccount bankAccount,
+                                 @AuthenticationPrincipal UserDetails userDetails) throws SQLException {
+        bankAccountService.addBankAccount(userDetails.getUsername(), bankAccount);
+        return "redirect:/user/extransfer";
+    }
+
 
     @PostMapping("/extransfert/deleteBankAccount")
     public String deleteBankAccount(@RequestParam String iban) {
