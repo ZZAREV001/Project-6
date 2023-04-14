@@ -16,12 +16,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.sql.SQLException;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @DataJpaTest
@@ -72,25 +69,6 @@ public class BankAccountDAOTest {
         // THEN
         assertThat(foundBankAccounts).hasSize(2);
         assertThat(foundBankAccounts).contains(bankAccount1, bankAccount2);
-    }
-
-
-    // Should be in BankAccountServiceImplTest
-    @Test
-    public void itShouldAddBankAccount() throws SQLException {
-        // GIVEN
-        when(userDao.findByEmail(user.getEmail())).thenReturn(user);
-        when(underTest.findBankAccountByIban(bankAccount.getIban())).thenReturn(null);
-        when(underTest.save(any(BankAccount.class))).thenReturn(bankAccount);
-
-        // WHEN
-        BankAccount addedBankAccount = bankAccountService.addBankAccount(user.getEmail(), bankAccount);
-
-        // THEN
-        assertThat(addedBankAccount).isEqualTo(bankAccount);
-        verify(userDao, times(1)).findByEmail(user.getEmail());
-        verify(underTest, times(1)).findBankAccountByIban(bankAccount.getIban());
-        verify(underTest, times(1)).save(bankAccount);
     }
 
 }
