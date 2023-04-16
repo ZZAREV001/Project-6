@@ -64,5 +64,10 @@ public class BankAccountServiceImplTest {
         verify(bankAccountDAO, times(1)).findBankAccountByIban(bankAccount.getIban());
         verify(bankAccountDAO, times(1)).save(bankAccount);
     }
+
+    @Test
+    public void itShouldDeleteBankAccount() {
+
+    }
 }
 
