@@ -2,7 +2,6 @@ package com.projet6.paymybuddy.service;
 
 import com.projet6.paymybuddy.dao.BankAccountDAO;
 import com.projet6.paymybuddy.dao.UserDAO;
-import com.projet6.paymybuddy.dto.BankAccountDto;
 import com.projet6.paymybuddy.exception.DataMissingException;
 import com.projet6.paymybuddy.model.BankAccount;
 import com.projet6.paymybuddy.model.User;
