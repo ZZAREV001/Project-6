@@ -109,17 +109,17 @@ public class TransferServiceImpl implements TransferService {
         return externalTransferDto;
     }
 
-    private BankAccount findBankAccount(String iban, String email) {
+    /* package-private */ BankAccount findBankAccount(String iban, String email) {
         return bankAccountDao.findBankAccountByIbanAndUser_Email(iban, email);
     }
 
-    private BigDecimal calculateFee(BigDecimal amount) {
+    /* package-private */ BigDecimal calculateFee(BigDecimal amount) {
         return amount.multiply(BigDecimal.valueOf(0.005));
     }
 
-    private ExternalTransfer createExternalTransfer(ExternalTransferDto dto,
-                                                    BankAccount bankAccount,
-                                                    BigDecimal fee) {
+    /* package-private */ExternalTransfer createExternalTransfer(ExternalTransferDto dto,
+                                                                 BankAccount bankAccount,
+                                                                 BigDecimal fee) {
         ExternalTransfer externalTransfer = new ExternalTransfer();
         externalTransfer.setAmount(dto.getAmountUser());
         externalTransfer.setDescription(dto.getDescription());
@@ -129,9 +129,11 @@ public class TransferServiceImpl implements TransferService {
         return externalTransfer;
     }
 
-    private void updateUserBalance(User user,
-                                   ExternalTransfer externalTransfer,
-                                   BigDecimal fee) {
+    /* package-private */ void updateUserBalance(User user,
+                                                 ExternalTransfer externalTransfer,
+                                                 BigDecimal fee) {
         user.setBalance(user.getBalance().add(externalTransfer.getAmount().subtract(fee)));
     }
+
 }
+

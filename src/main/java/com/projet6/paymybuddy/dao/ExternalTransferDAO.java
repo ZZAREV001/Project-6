@@ -10,5 +10,4 @@ public interface ExternalTransferDAO extends JpaRepository<ExternalTransfer, Int
     ExternalTransfer[] findAllByBankAccount_User_EmailOrderByTransactionDateDesc(
             String emailOwner);
 
-
 }

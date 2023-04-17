@@ -1,11 +1,10 @@
 package com.projet6.paymybuddy.service;
 
 import com.projet6.paymybuddy.dao.*;
+import com.projet6.paymybuddy.dto.ExternalTransferDto;
 import com.projet6.paymybuddy.dto.InternalTransferDto;
 import com.projet6.paymybuddy.exception.DataNotFoundException;
-import com.projet6.paymybuddy.model.InternalTransfer;
-import com.projet6.paymybuddy.model.Relation;
-import com.projet6.paymybuddy.model.User;
+import com.projet6.paymybuddy.model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,11 +14,13 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.List;
-
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -38,6 +39,9 @@ public class TransferServiceImplTest {
     private InternalTransferDAO internalTransferDao;
 
     @MockBean
+    private BankAccountDAO bankAccountDao;
+
+    @MockBean
     private RelationDAO relationDao;
 
     @MockBean
@@ -46,12 +50,11 @@ public class TransferServiceImplTest {
     @MockBean
     private ExternalTransferDAO externalTransferDao;
 
-    @MockBean
-    private BankAccountDAO bankAccountDao;
-
     private User sender;
     private User receiver;
     private Relation relation;
+    private BankAccount bankAccount;
+    private User user;
 
     @BeforeEach
     public void setUp() {
@@ -64,6 +67,14 @@ public class TransferServiceImplTest {
         receiver.setBalance(BigDecimal.valueOf(50));
 
         relation = new Relation(sender, receiver);
+
+        user = new User();
+        user.setEmail("user@example.com");
+        user.setBalance(BigDecimal.valueOf(150));
+
+        bankAccount = new BankAccount();
+        bankAccount.setIban("1234567890");
+        bankAccount.setUser(user);
     }
 
     @Test
@@ -154,4 +165,160 @@ public class TransferServiceImplTest {
         verify(internalTransferDao, times(1))
                 .findAllByUserSender_EmailOrderByTransactionDateDesc(sender.getEmail());
     }
+
+    @Test
+    public void itShouldFindExternalTransfersByUser() {
+        // GIVEN
+        ExternalTransfer externalTransfer1 = new ExternalTransfer();
+        externalTransfer1.setBankAccount(bankAccount);
+        externalTransfer1.setAmount(BigDecimal.valueOf(100));
+        externalTransfer1.setDescription("Test external transfer 1");
+        externalTransfer1.setFees(BigDecimal.valueOf(1));
+
+        ExternalTransfer externalTransfer2 = new ExternalTransfer();
+        externalTransfer2.setBankAccount(bankAccount);
+        externalTransfer2.setAmount(BigDecimal.valueOf(200));
+        externalTransfer2.setDescription("Test external transfer 2");
+        externalTransfer2.setFees(BigDecimal.valueOf(2));
+
+        ExternalTransfer[] externalTransfers = {externalTransfer1, externalTransfer2};
+
+        when(externalTransferDao.findAllByBankAccount_User_EmailOrderByTransactionDateDesc(user.getEmail()))
+                .thenReturn(externalTransfers);
+
+        // WHEN
+        List<ExternalTransferDto> result = transferService.findExternalTransferByUser(user.getEmail());
+
+        // THEN
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getIbanUser()).isEqualTo(bankAccount.getIban());
+        assertThat(result.get(0).getAmountUser()).isEqualTo(externalTransfer1.getAmount());
+        assertThat(result.get(0).getDescription()).isEqualTo(externalTransfer1.getDescription());
+        assertThat(result.get(0).getFees()).isEqualTo(externalTransfer1.getFees());
+
+        assertThat(result.get(1).getIbanUser()).isEqualTo(bankAccount.getIban());
+        assertThat(result.get(1).getAmountUser()).isEqualTo(externalTransfer2.getAmount());
+        assertThat(result.get(1).getDescription()).isEqualTo(externalTransfer2.getDescription());
+        assertThat(result.get(1).getFees()).isEqualTo(externalTransfer2.getFees());
+
+        verify(externalTransferDao, times(1)).findAllByBankAccount_User_EmailOrderByTransactionDateDesc(user.getEmail());
+    }
+
+    @Test
+    public void itShouldDoExternalTransfer() {
+        // GIVEN
+        ExternalTransferDto externalTransferDto = new ExternalTransferDto();
+        externalTransferDto.setIbanUser(bankAccount.getIban());
+        externalTransferDto.setEmailUser(user.getEmail());
+        externalTransferDto.setAmountUser(BigDecimal.valueOf(100));
+        externalTransferDto.setDescription("Test external transfer");
+        externalTransferDto.setFees(BigDecimal.ZERO);
+
+        when(bankAccountDao.findBankAccountByIbanAndUser_Email(bankAccount.getIban(),
+                user.getEmail())).thenReturn(bankAccount);
+        when(transferDao.save(any(ExternalTransfer.class))).thenAnswer(invocation -> {
+            ExternalTransfer externalTransfer = invocation.getArgument(0);
+            externalTransfer.setId(1); // we assign a fake ID for testing purposes
+            return externalTransfer;
+        });
+
+        // WHEN
+        ExternalTransferDto result = transferService.doExternalTransfer(externalTransferDto);
+
+        // THEN
+        assertThat(result.getIbanUser()).isEqualTo(externalTransferDto.getIbanUser());
+        assertThat(result.getEmailUser()).isEqualTo(externalTransferDto.getEmailUser());
+        assertThat(result.getAmountUser()).isEqualTo(externalTransferDto.getAmountUser());
+        assertThat(result.getDescription()).isEqualTo(externalTransferDto.getDescription());
+        assertThat(result.getFees()).isNotNull();
+        assertThat(result.getId()).isNotNull();
+
+        verify(bankAccountDao, times(1))
+                .findBankAccountByIbanAndUser_Email(bankAccount.getIban(), user.getEmail());
+        verify(transferDao, times(1)).save(any(ExternalTransfer.class));
+        verify(userDao, times(1)).save(any(User.class));
+    }
+
+    @Test
+    public void itShouldFindBankAccountByIbanAndEmail() {
+        // GIVEN
+        String iban = "1234567890";
+        String email = "user@example.com";
+
+        when(bankAccountDao.findBankAccountByIbanAndUser_Email(iban, email)).thenReturn(bankAccount);
+
+        // WHEN
+        BankAccount result = ((TransferServiceImpl) transferService).findBankAccount(iban, email);
+
+        // THEN
+        assertThat(result).isNotNull();
+        assertThat(result.getIban()).isEqualTo(iban);
+        assertThat(result.getUser().getEmail()).isEqualTo(email);
+
+        verify(bankAccountDao, times(1))
+                .findBankAccountByIbanAndUser_Email(iban, email);
+    }
+
+    @Test
+    public void itShouldCalculateFee() {
+        // GIVEN
+        BigDecimal amount = BigDecimal.valueOf(200);
+        BigDecimal expectedFee = BigDecimal.valueOf(1); // 0.5% of 200 is 1
+
+        // WHEN
+        BigDecimal fee = ((TransferServiceImpl) transferService).calculateFee(amount);
+
+        // THEN
+        assertThat(fee).isNotNull();
+        assertThat(fee).isEqualByComparingTo(expectedFee.setScale(2, RoundingMode.HALF_UP));
+    }
+
+    @Test
+    public void itShouldCreateExternalTransfer() {
+        // GIVEN
+        ExternalTransferDto dto = new ExternalTransferDto();
+        dto.setAmountUser(BigDecimal.valueOf(100));
+        dto.setDescription("Test external transfer");
+        dto.setIbanUser(bankAccount.getIban());
+        dto.setEmailUser(user.getEmail());
+        BigDecimal fee = BigDecimal.valueOf(0.5);
+
+        // WHEN
+        ExternalTransfer externalTransfer = ((TransferServiceImpl) transferService).createExternalTransfer(dto, bankAccount, fee);
+
+        // THEN
+        assertThat(externalTransfer).isNotNull();
+        assertThat(externalTransfer.getAmount()).isEqualByComparingTo(dto.getAmountUser());
+        assertThat(externalTransfer.getDescription()).isEqualTo(dto.getDescription());
+        assertThat(externalTransfer.getFees()).isEqualByComparingTo(fee);
+        assertThat(externalTransfer.getBankAccount()).isEqualTo(bankAccount);
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime transactionDateTime = timestampToLocalDateTime((Timestamp) externalTransfer.getTransactionDate());
+        assertThat(transactionDateTime)
+                .isBetween(now.minusSeconds(1), now.plusSeconds(1));
+    }
+
+    // A method for converting a Timestamp to a LocalDateTime.
+    LocalDateTime timestampToLocalDateTime(Timestamp timestamp) {
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp.getTime()), ZoneId.systemDefault());
+    }
+
+    @Test
+    public void itShouldUpdateUserBalance() {
+        // GIVEN
+        User user = new User();
+        user.setBalance(BigDecimal.valueOf(100));
+
+        ExternalTransfer externalTransfer = new ExternalTransfer();
+        externalTransfer.setAmount(BigDecimal.valueOf(50));
+        BigDecimal fee = BigDecimal.valueOf(0.25);
+
+        // WHEN
+        ((TransferServiceImpl) transferService).updateUserBalance(user, externalTransfer, fee);
+
+        // THEN
+        assertThat(user.getBalance()).isEqualByComparingTo(BigDecimal.valueOf(149.75));
+    }
+
+
 }
