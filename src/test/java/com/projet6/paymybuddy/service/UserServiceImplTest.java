@@ -3,7 +3,9 @@ package com.projet6.paymybuddy.service;
 import com.projet6.paymybuddy.dao.RelationDAO;
 import com.projet6.paymybuddy.dao.RoleDAO;
 import com.projet6.paymybuddy.dao.UserDAO;
+import com.projet6.paymybuddy.dto.BuddyFormDto;
 import com.projet6.paymybuddy.dto.UserRegistrationDto;
+import com.projet6.paymybuddy.exception.DataNotFoundException;
 import com.projet6.paymybuddy.model.Relation;
 import com.projet6.paymybuddy.model.Role;
 import com.projet6.paymybuddy.model.User;
@@ -21,8 +23,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -164,6 +166,40 @@ public class UserServiceImplTest {
         verify(userDao, times(1)).findByEmail(email);
     }
 
-    // Add a buddy test method:
+    // IMPORTANT: test the addBuddy method in UserServiceImpl:
+    @Test
+    public void itShouldAddBuddy() throws DataNotFoundException {
+        // GIVEN
+        String ownerEmail = "owner@example.com";
+        String buddyEmail = "buddy@example.com";
+        User owner = new User("Owner", "OwnerLastName", ownerEmail, "owner_password", BigDecimal.ZERO, new Date(), null);
+        User buddy = new User("Buddy", "BuddyLastName", buddyEmail, "buddy_password", BigDecimal.ZERO, new Date(), null);
+        Relation relation = new Relation(owner, buddy);
+
+        when(userDao.findByEmail(ownerEmail)).thenReturn(owner);
+        when(userDao.findByEmail(buddyEmail)).thenReturn(buddy);
+        when(relationDao.save(any(Relation.class))).thenReturn(relation);
+        when(userDao.save(any(User.class))).thenReturn(owner);
+
+        BuddyFormDto buddyFormDto = new BuddyFormDto();
+        buddyFormDto.setOwner(ownerEmail);
+        buddyFormDto.setBuddy(buddyEmail);
+
+        // WHEN
+        User result = userService.addBuddy(buddyFormDto);
+
+        // THEN
+        assertThat(result).isNotNull();
+        assertThat(result).isEqualTo(owner);
+        assertThat(result.getRelations().get(0)).isEqualTo(relation);
+        assertThat(result.getRelations().get(0).getBuddy()).isEqualTo(buddy);
+
+        verify(userDao, times(1)).findByEmail(ownerEmail);
+        verify(userDao, times(1)).findByEmail(buddyEmail);
+        verify(relationDao, times(1)).save(any(Relation.class));
+        verify(userDao, times(1)).save(any(User.class));
+    }
+
+    // Unit tests for the private helper methods:
 
 }

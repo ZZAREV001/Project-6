@@ -95,11 +95,16 @@ public class UserServiceImpl implements UserService {
         return saveOwner(owner);
     }
 
-    private User findUserByEmail(String email) {
+    /* package-private */ Relation createRelation(User owner, User buddy) {
+        Relation relation = new Relation(owner, buddy);
+        return relationDao.save(relation); // Save the relation here
+    }
+
+    /* package-private */ User findUserByEmail(String email) {
         return userDao.findByEmail(email);
     }
 
-    private void checkIfRelationExists(User owner, String buddyEmail) throws DataAlreadyExistException {
+    /* package-private */ void checkIfRelationExists(User owner, String buddyEmail) throws DataAlreadyExistException {
         if (owner.getRelations() != null && !owner.getRelations().isEmpty() &&
                 owner.getRelations().stream()
                         .anyMatch(relation -> relation.getBuddy().getEmail().equals(buddyEmail))) {
@@ -107,7 +112,7 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private User findBuddyByEmail(String email) {
+    /* package-private */ User findBuddyByEmail(String email) {
         User buddy = userDao.findByEmail(email);
         if (buddy == null) {
             throw new DataNotFoundException("buddy does not exist");
@@ -115,14 +120,7 @@ public class UserServiceImpl implements UserService {
         return buddy;
     }
 
-    private Relation createRelation(User owner, User buddy) {
-        Relation relation = new Relation();
-        relation.setOwner(owner);
-        relation.setBuddy(buddy);
-        return relation;
-    }
-
-    private void addRelationToOwner(User owner, Relation relation) {
+    /* package-private */ void addRelationToOwner(User owner, Relation relation) {
         if (owner.getRelations() == null) {
             owner.setRelations(new ArrayList<>());
         }
