@@ -104,6 +104,7 @@ public class UserServiceImpl implements UserService {
         return userDao.findByEmail(email);
     }
 
+    // Test identification of existence of relation: be careful with this method
     /* package-private */ void checkIfRelationExists(User owner, String buddyEmail) throws DataAlreadyExistException {
         if (owner.getRelations() != null && !owner.getRelations().isEmpty() &&
                 owner.getRelations().stream()

@@ -23,8 +23,9 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -201,5 +202,71 @@ public class UserServiceImplTest {
     }
 
     // Unit tests for the private helper methods:
+    @Test
+    public void itShouldCreateRelation() {
+        // Arrange
+        User owner = new User(1, "John", "Doe", "johndoe@example.com", "password", BigDecimal.ZERO, new Date());
+        User buddy = new User(2, "Jane", "Doe", "janedoe@example.com", "password", BigDecimal.ZERO, new Date());
+        Relation expectedRelation = new Relation(owner, buddy);
+
+        when(relationDao.save(any(Relation.class))).thenReturn(expectedRelation);
+
+        // Act
+        Relation createdRelation = userService.createRelation(owner, buddy);
+
+        // Assert
+        assertThat(createdRelation).isEqualTo(expectedRelation);
+        verify(relationDao).save(any(Relation.class));
+    }
+
+    @Test
+    public void itShouldFindUserByEmail() {
+        // Arrange
+        String email = "johndoe@example.com";
+        User expectedUser = new User(1, "John", "Doe", email, "password", BigDecimal.ZERO, new Date());
+
+        when(userDao.findByEmail(anyString())).thenReturn(expectedUser);
+
+        // Act
+        User foundUser = userService.findUserByEmail(email);
+
+        // Assert
+        assertThat(foundUser).isEqualTo(expectedUser);
+        verify(userDao).findByEmail(email);
+    }
+
+    @Test
+    void findBuddyByEmail_shouldReturnUserWhenUserExists() {
+        // Arrange
+        String email = "buddy@example.com";
+        User expectedUser = new User();
+        expectedUser.setEmail(email);
+        when(userDao.findByEmail(email)).thenReturn(expectedUser);
+
+        // Act
+        User actualUser = userService.findBuddyByEmail(email);
+
+        // Assert
+        assertThat(actualUser).isEqualTo(expectedUser);
+        verify(userDao, times(1)).findByEmail(email);
+    }
+
+    @Test
+    void findBuddyByEmail_shouldThrowDataNotFoundExceptionWhenUserDoesNotExist() {
+        // Arrange
+        String email = "nonexistent@example.com";
+        when(userDao.findByEmail(email)).thenReturn(null);
+
+        // Act and Assert
+        assertThatExceptionOfType(DataNotFoundException.class)
+                .isThrownBy(() -> userService.findBuddyByEmail(email))
+                .withMessage("buddy does not exist");
+
+        verify(userDao, times(1)).findByEmail(email);
+    }
+
+
+
+
 
 }
