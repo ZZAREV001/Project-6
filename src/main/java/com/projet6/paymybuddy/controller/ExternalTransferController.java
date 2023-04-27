@@ -26,13 +26,13 @@ public class ExternalTransferController {
     @GetMapping("/extransfer")
     public String externalTransferPage(Model model,
                                        @AuthenticationPrincipal UserDetails userDetails) {
-        model.addAttribute("externalTransfers",
-                transferService.findExternalTransferByUser(userDetails.getUsername()));
-        model.addAttribute("externalTransfer", new ExternalTransferDto());
-        model.addAttribute("listBankAccount",
-                bankAccountService.findBankAccountByUser(userDetails.getUsername()));
-        model.addAttribute("bankAccount", new BankAccount());
-        return "extransfer";
+            model.addAttribute("externalTransfers",
+                    transferService.findExternalTransferByUser(userDetails.getUsername()));
+            model.addAttribute("externalTransfer", new ExternalTransferDto());
+            model.addAttribute("listBankAccount",
+                    bankAccountService.findBankAccountByUser(userDetails.getUsername()));
+            model.addAttribute("bankAccount", new BankAccount());
+            return "extransfer";
     }
 
     @PostMapping("/extransfer/doExternalTransfer")
@@ -50,10 +50,10 @@ public class ExternalTransferController {
         return "redirect:/user/extransfer";
     }
 
-
     @PostMapping("/extransfert/deleteBankAccount")
     public String deleteBankAccount(@RequestParam String iban) {
         bankAccountService.deleteBankAccount(iban);
         return "redirect:/user/extransfer";
     }
+
 }

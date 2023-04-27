@@ -55,7 +55,6 @@ public class BankAccountServiceImpl implements BankAccountService {
                 });
     }
 
-
     @Override
     public Optional<Boolean> deleteBankAccount(String iban) {
         return bankAccountDao.findById(iban)

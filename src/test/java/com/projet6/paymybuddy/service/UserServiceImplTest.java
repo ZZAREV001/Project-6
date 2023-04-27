@@ -265,8 +265,4 @@ public class UserServiceImplTest {
         verify(userDao, times(1)).findByEmail(email);
     }
 
-
-
-
-
 }
