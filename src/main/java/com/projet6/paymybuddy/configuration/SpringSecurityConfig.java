@@ -50,7 +50,6 @@ public class SpringSecurityConfig extends WebSecurityConfigurerAdapter {
         return daoAuthenticationProvider;
     }
 
-
     @Override
     protected void configure(AuthenticationManagerBuilder authenticationManagerBuilder) {
         authenticationManagerBuilder.authenticationProvider(daoAuthenticationProvider());

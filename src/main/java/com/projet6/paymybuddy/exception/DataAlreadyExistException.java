@@ -8,5 +8,5 @@ public class DataAlreadyExistException extends Throwable {
 
     private static final long serialVersionUID = 6320761683163893425L;
 
-    public DataAlreadyExistException(String message){super();}
+    public DataAlreadyExistException(String message){super(message);}
 }

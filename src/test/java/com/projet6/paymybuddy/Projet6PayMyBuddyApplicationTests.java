@@ -8,6 +8,7 @@ class Projet6PayMyBuddyApplicationTests {
 
     @Test
     void contextLoads() {
+        // The application context is loaded successfully when this test runs.
     }
 
 }
