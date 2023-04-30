@@ -102,6 +102,31 @@ public class TransferServiceImplTest {
         verify(userDao, times(2)).save(any(User.class));
     }
 
+    // TODO correct the two tests
+    @Test
+    public void itShouldNotDoInternalTransferWhenSenderHasInsufficientBalance() {
+        // GIVEN
+        InternalTransferDto internalTransferDto = new InternalTransferDto();
+        internalTransferDto.setAmount(sender.getBalance().add(BigDecimal.ONE)); // Sender's balance + 1
+        internalTransferDto.setEmailSender(sender.getEmail());
+        internalTransferDto.setEmailReceiver(receiver.getEmail());
+        internalTransferDto.setDescription("Test transfer");
+
+        when(relationDao.findByOwner_EmailAndBuddy_Email(sender.getEmail(), receiver.getEmail())).thenReturn(relation);
+
+        // WHEN
+        // Expect a DataNotFoundException to be thrown
+        assertThatThrownBy(() -> transferService.doInternalTransfer(internalTransferDto))
+                .isInstanceOf(DataNotFoundException.class)
+                .hasMessageContaining("the 2 users are not friends");
+
+        // THEN
+        verify(relationDao, times(1)).findByOwner_EmailAndBuddy_Email(sender.getEmail(), receiver.getEmail());
+        verify(transferDao, times(0)).save(any(InternalTransfer.class)); // No transfer should be saved
+        verify(userDao, times(0)).save(any(User.class)); // No user should be updated
+    }
+
+
     @Test
     public void itShouldNotDoInternalTransferIfNotFriends() {
         // GIVEN

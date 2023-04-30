@@ -40,7 +40,7 @@ public class TransferServiceImpl implements TransferService {
                 .findByOwner_EmailAndBuddy_Email(internalTransferDto.getEmailSender(),
                         internalTransferDto.getEmailReceiver()));
         return relationOptional.filter(relation -> internalTransferDto.getAmount()
-                        .compareTo(relation.getOwner().getBalance()) <= 0)
+                        .compareTo(relation.getOwner().getBalance()) > 0) // risk of logical here
                 .map(relation -> {
                     InternalTransfer internalTransfer = new InternalTransfer();
                     internalTransfer.setUserSender(relation.getOwner());
@@ -98,10 +98,12 @@ public class TransferServiceImpl implements TransferService {
 
     @Override
     public ExternalTransferDto doExternalTransfer(ExternalTransferDto externalTransferDto) {
-        BankAccount bankAccount = findBankAccount(externalTransferDto.getIbanUser(), externalTransferDto.getEmailUser());
+        BankAccount bankAccount = findBankAccount(externalTransferDto.getIbanUser(),
+                externalTransferDto.getEmailUser());
         User user = bankAccount.getUser();
         BigDecimal fee = calculateFee(externalTransferDto.getAmountUser());
-        ExternalTransfer externalTransfer = createExternalTransfer(externalTransferDto, bankAccount, fee);
+        ExternalTransfer externalTransfer = createExternalTransfer(externalTransferDto,
+                bankAccount, fee);
         transferDao.save(externalTransfer);
         externalTransferDto.setId(externalTransfer.getId());
         updateUserBalance(user, externalTransfer, fee);
