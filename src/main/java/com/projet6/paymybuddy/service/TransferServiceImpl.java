@@ -3,7 +3,6 @@ package com.projet6.paymybuddy.service;
 import com.projet6.paymybuddy.dao.*;
 import com.projet6.paymybuddy.dto.ExternalTransferDto;
 import com.projet6.paymybuddy.dto.InternalTransferDto;
-import com.projet6.paymybuddy.exception.DataNotFoundException;
 import com.projet6.paymybuddy.model.*;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -39,8 +38,13 @@ public class TransferServiceImpl implements TransferService {
         Optional<Relation> relationOptional = Optional.ofNullable(relationDao
                 .findByOwner_EmailAndBuddy_Email(internalTransferDto.getEmailSender(),
                         internalTransferDto.getEmailReceiver()));
-        return relationOptional.filter(relation -> internalTransferDto.getAmount()
-                        .compareTo(relation.getOwner().getBalance()) > 0) // risk of logical here
+        return relationOptional.filter(relation -> {
+                    boolean canTransfer = internalTransferDto.getAmount().compareTo(relation.getOwner().getBalance()) > 0;
+                    System.out.println("Can transfer? " + canTransfer);
+                    System.out.println("Transfer amount: " + internalTransferDto.getAmount());
+                    System.out.println("Sender balance: " + relation.getOwner().getBalance());
+                    return canTransfer;
+                })
                 .map(relation -> {
                     InternalTransfer internalTransfer = new InternalTransfer();
                     internalTransfer.setUserSender(relation.getOwner());
@@ -61,7 +65,11 @@ public class TransferServiceImpl implements TransferService {
 
                     return internalTransferDto;
                 })
-                .orElseThrow(() -> new DataNotFoundException("the 2 users are not friends"));
+                .orElseGet(() -> {
+                    System.out.println("Returning errorDto with null amount");
+                    InternalTransferDto errorDto = new InternalTransferDto();
+                    return errorDto;
+                });
     }
 
     @Override

@@ -18,5 +18,4 @@ public class InternalTransferDto {
     private String emailReceiver;
 
     private String description;
-
 }
